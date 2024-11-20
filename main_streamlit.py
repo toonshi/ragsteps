@@ -14,7 +14,7 @@ load_dotenv()
 st.set_page_config(page_title="RAG Knowledge Base", page_icon=None)
 
 # Title
-st.title("Study Rug")
+st.title("RAG Knowledge Base")
 
 # Initialize session state
 if 'setup_stage' not in st.session_state:

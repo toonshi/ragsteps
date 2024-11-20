@@ -1,7 +1,4 @@
-from transformers import (
-    DPRQuestionEncoder,
-    DPRQuestionEncoderTokenizer,
-)
+from transformers import DPRQuestionEncoder, DPRQuestionEncoderTokenizer
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
@@ -10,6 +7,7 @@ from dotenv import load_dotenv
 import os
 import torch
 import numpy as np
+import streamlit as st
 
 # Load environment variables
 load_dotenv()
@@ -90,9 +88,13 @@ def setup_rag():
     )
     
     # Initialize LLM
+    openai_api_key = st.secrets["OPENAI_API_KEY"]  # Make sure to set this in your Streamlit secrets
+
+    # Initialize OpenAI model
     llm = ChatOpenAI(
         model="gpt-3.5-turbo",
-        temperature=0.7
+        temperature=0.7,
+        openai_api_key=openai_api_key  # Use the API key from Streamlit secrets
     )
     
     # Create prompt template
@@ -115,6 +117,7 @@ def setup_rag():
     # Create chain
     chain = LLMChain(llm=llm, prompt=prompt)
     
+    # Return all components
     return collection, question_encoder, question_tokenizer, llm, chain
 
 def query_documents(question):
