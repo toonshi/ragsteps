@@ -163,6 +163,6 @@ with sidebar_col:
             with st.sidebar.expander(f"Context {i}"):
                 st.markdown(context)
 
-# Footer
-st.markdown("---")
-st.markdown("Thanks for checking it out!")
+# # Footer
+# st.markdown("---")
+# st.markdown("Thanks for checking it out!")
