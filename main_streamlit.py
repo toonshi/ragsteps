@@ -27,6 +27,9 @@ if 'messages' not in st.session_state:
 if 'setup_complete' not in st.session_state:
     st.session_state.setup_complete = False
 
+if 'use_gpt_knowledge' not in st.session_state:
+    st.session_state.use_gpt_knowledge = True
+
 # Create two columns: chat and sidebar
 chat_col, sidebar_col = st.columns([2, 1])
 
@@ -51,7 +54,7 @@ with chat_col:
         # Get bot response
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-                response = query_knowledge_base(prompt)
+                response = query_knowledge_base(prompt, use_gpt_knowledge=st.session_state.use_gpt_knowledge)
                 if response['error']:
                     error_message = f"⚠️ Error: {response['error']}"
                     st.error(error_message)
@@ -62,6 +65,14 @@ with chat_col:
 
 with sidebar_col:
     st.sidebar.title("Document Management")
+    
+    # Knowledge Mode Toggle
+    st.sidebar.markdown("### Knowledge Mode")
+    st.session_state.use_gpt_knowledge = st.sidebar.toggle(
+        "Use GPT Knowledge",
+        value=st.session_state.use_gpt_knowledge,
+        help="Toggle between using only document knowledge or allowing GPT to use its general knowledge"
+    )
     
     # Upload documents
     uploaded_files = st.sidebar.file_uploader(
@@ -154,4 +165,4 @@ with sidebar_col:
 
 # Footer
 st.markdown("---")
-st.markdown("Powered by DPR, Pinecone, and GPT-3.5")
+st.markdown("For educational purposes only")

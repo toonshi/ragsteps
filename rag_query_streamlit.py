@@ -22,7 +22,7 @@ def get_question_embedding(question):
     question_embedding = question_encoder(**question_inputs).pooler_output
     return question_embedding[0].detach().numpy()
 
-def query_knowledge_base(question, top_k=3):
+def query_knowledge_base(question, top_k=3, use_gpt_knowledge=True):
     try:
         # Initialize Pinecone
         pc = Pinecone(api_key=os.getenv('PINECONE_API_KEY'))
@@ -43,20 +43,42 @@ def query_knowledge_base(question, top_k=3):
         # Extract contexts
         contexts = [match.metadata['text'] for match in results.matches]
         
-        # Create prompt for GPT
-        prompt = f"""Based on the following contexts, answer the question. If the answer cannot be found in the contexts, say "I cannot answer this based on the available information."
+        # Create prompt for GPT based on mode
+        if use_gpt_knowledge:
+            prompt = f"""Answer the question based on the provided contexts. If the contexts don't contain enough information, you can also use your general knowledge to provide a complete answer. Always prioritize information from the contexts when available, but feel free to supplement with additional relevant information.
 
 Question: {question}
 
-Relevant contexts:
+Relevant contexts from documents:
 {chr(10).join(f'Context {i+1}: {context}' for i, context in enumerate(contexts))}
 
-Answer the question in a clear and concise manner. If you find multiple relevant pieces of information in the contexts, synthesize them into a coherent response."""
+Instructions:
+1. First, use information from the provided contexts when available
+2. If the contexts don't fully answer the question, supplement with your general knowledge
+3. If using general knowledge, clearly indicate which parts of your answer come from the documents and which are from your general knowledge
+4. Be helpful and informative while maintaining accuracy
+
+Answer:"""
+        else:
+            prompt = f"""Answer the question based ONLY on the provided contexts. If the contexts don't contain enough information to answer the question, simply state that you cannot answer based on the available information.
+
+Question: {question}
+
+Relevant contexts from documents:
+{chr(10).join(f'Context {i+1}: {context}' for i, context in enumerate(contexts))}
+
+Instructions:
+1. Only use information from the provided contexts
+2. If the contexts don't contain enough information, say so
+3. Do not use any external knowledge
+4. Be accurate and precise
+
+Answer:"""
         
         # Get response from GPT
         client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
         messages = [
-            {"role": "system", "content": "You are a helpful assistant that answers questions based on the provided context. Be accurate and concise."},
+            {"role": "system", "content": "You are a helpful assistant that answers questions based on provided document contexts." + (" You can also use your general knowledge when appropriate." if use_gpt_knowledge else " You must ONLY use information from the provided contexts.")},
             {"role": "user", "content": prompt}
         ]
         
@@ -78,22 +100,3 @@ Answer the question in a clear and concise manner. If you find multiple relevant
             'contexts': None,
             'error': str(e)
         }
-
-if __name__ == "__main__":
-    while True:
-        # Get user question
-        question = input("\nEnter your question (or 'quit' to exit): ")
-        
-        if question.lower() == 'quit':
-            print("Goodbye!")
-            break
-        
-        try:
-            # Get response
-            answer = query_knowledge_base(question)
-            print("\nAnswer:", answer['answer'])
-            print("\nContexts:", answer['contexts'])
-            
-        except Exception as e:
-            print(f"An error occurred: {str(e)}")
-            print("Make sure you have set your PINECONE_API_KEY and OPENAI_API_KEY in the .env file")
