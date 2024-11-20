@@ -1,0 +1,11 @@
+chromadb
+pypdf
+openai
+sentence-transformers
+umap-learn
+matplotlib
+pandas
+langchain
+langchain-community
+torch
+transformers
