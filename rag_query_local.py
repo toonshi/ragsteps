@@ -90,17 +90,13 @@ def setup_rag():
     )
     
     # Initialize LLM
-    openai_api_key = st.secrets["OPENAI_API_KEY"]
-
-# Then use this key in your setup_rag function
-llm = ChatOpenAI(
-    model="gpt-3.5-turbo",
-    temperature=0.7,
-    openai_api_key=openai_api_key  # Use the API key from Streamlit secrets
-)
+    llm = ChatOpenAI(
+        model="gpt-3.5-turbo",
+        temperature=0.7
+    )
     
     # Create prompt template
-template = """You are a helpful assistant that provides accurate information based on the given context.
+    template = """You are a helpful assistant that provides accurate information based on the given context.
     Use the following context to answer the question. If you can't find the answer in the context, say so.
     Don't make up information.
 
@@ -111,15 +107,15 @@ template = """You are a helpful assistant that provides accurate information bas
 
     Answer: """
     
-prompt = PromptTemplate(
+    prompt = PromptTemplate(
         template=template,
         input_variables=["context", "question"]
     )
     
     # Create chain
-chain = LLMChain(llm=llm, prompt=prompt)
+    chain = LLMChain(llm=llm, prompt=prompt)
     
-return collection, question_encoder, question_tokenizer, llm, chain
+    return collection, question_encoder, question_tokenizer, llm, chain
 
 def query_documents(question):
     """Main function to query documents using RAG with DPR and query expansion"""
