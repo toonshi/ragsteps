@@ -11,10 +11,10 @@ import chromadb
 load_dotenv()
 
 # Page config
-st.set_page_config(page_title="RAG Knowledge Base", page_icon="🔍")
+st.set_page_config(page_title="RAG Knowledge Base", page_icon=None)
 
 # Title
-st.title("📚 RAG Knowledge Base")
+st.title("RAG Knowledge Base")
 
 # Initialize session state
 if 'setup_stage' not in st.session_state:
@@ -28,24 +28,24 @@ if 'rag_components' not in st.session_state:
         
         # Stage 0: Starting
         if st.session_state.setup_stage == 0:
-            status.info("⏳ Starting model download...")
+            status.info("Starting model download...")
             progress.progress(10)
             time.sleep(1)
             st.session_state.setup_stage = 1
         
         # Stage 1: Downloading
         if st.session_state.setup_stage == 1:
-            status.info("⏳ Downloading DPR model (this may take a few minutes)...")
+            status.info("Downloading DPR model (this may take a few minutes)...")
             progress.progress(30)
             st.session_state.rag_components = setup_rag()
             st.session_state.setup_stage = 2
         
         # Stage 2: Finalizing
         if st.session_state.setup_stage == 2:
-            status.info("⚡ Finalizing setup...")
+            status.info("Finalizing setup...")
             progress.progress(100)
             time.sleep(1)
-            status.success("✅ System ready!")
+            status.success("System ready!")
             st.session_state.setup_stage = 3
         
     except Exception as e:
@@ -62,7 +62,7 @@ def delete_from_chroma(filename):
 
 # Sidebar with document management
 with st.sidebar:
-    st.header("📁 Document Management")
+    st.header("Document Management")
     
     # Document upload section
     st.subheader("Upload Documents")
@@ -87,7 +87,7 @@ with st.sidebar:
                 if pdf_paths:
                     load_pdfs_to_chroma(pdf_paths, is_directory=False)
                     
-            st.success("✅ Documents added and vectorized successfully!")
+            st.success("Documents added and vectorized successfully!")
             st.rerun()
             
         except Exception as e:
@@ -104,7 +104,7 @@ with st.sidebar:
                 with col1:
                     st.markdown(f"- {doc}")
                 with col2:
-                    if st.button("🗑️", key=f"delete_{doc}"):
+                    if st.button("Delete", key=f"delete_{doc}"):
                         try:
                             # Remove file from filesystem
                             os.remove(os.path.join(docs_path, doc))
@@ -115,11 +115,11 @@ with st.sidebar:
                         except Exception as e:
                             st.error(f"Error deleting {doc}: {str(e)}")
         else:
-            st.info("No documents uploaded yet")
+            st.info("No documents uploaded yet.")
     
     st.markdown("---")
     # Clear all documents
-    if st.button("🗑️ Clear All Documents", type="secondary"):
+    if st.button("Clear All Documents", type="secondary"):
         try:
             # Remove all files
             if os.path.exists(docs_path):
@@ -135,7 +135,7 @@ with st.sidebar:
             st.error(f"Error clearing documents: {str(e)}")
 
 # Main query interface
-st.markdown("### 🔍 Ask Questions")
+st.markdown("### Ask Questions")
 query = st.text_input("Enter your question:", placeholder="e.g., What are the key points about early intervention?")
 
 if query and st.session_state.setup_stage == 3:
@@ -150,11 +150,11 @@ if query and st.session_state.setup_stage == 3:
             response = chain.run(context=context, question=query)
             
             # Show answer
-            st.markdown("### 📝 Answer:")
+            st.markdown("### Answer:")
             st.write(response)
             
             # Show details
-            with st.expander("🔍 Search Details"):
+            with st.expander("Search Details"):
                 st.markdown("#### Query Variations:")
                 for q in expanded_queries:
                     st.markdown(f"- {q}")
