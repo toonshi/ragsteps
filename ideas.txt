@@ -1,0 +1,55 @@
+Study Rug - Future Enhancement Ideas
+
+1. Vector Database Access from Other Projects
+   - Create standalone query script (query_existing_vectors.py)
+   - Natural language querying of existing vectors
+   - GPT-enhanced response generation
+   - Reusable vector embeddings across projects
+
+2. Google Drive Integration
+   - Automatic PDF backup to Google Drive
+   - Folder organization by upload date
+   - Shared document access
+   - Version control for documents
+
+3. Query Logging and Analytics
+   - Save user queries with timestamps
+   - Track most common questions
+   - Analyze query patterns
+   - Generate usage reports
+
+4. Advanced Features
+   - User authentication
+   - Role-based access control
+   - Rate limiting for uploads
+   - Separate Pinecone indexes per user
+   - Advanced context filtering
+   - Multi-document type support
+   - User feedback mechanisms
+
+5. Security Enhancements
+   - API key rotation
+   - Secure credential storage
+   - Access logging
+   - Rate limiting
+   - Input validation
+
+6. Performance Optimizations
+   - Batch processing for large uploads
+   - Caching frequently accessed vectors
+   - Optimized embedding generation
+   - Response time improvements
+
+7. UI/UX Improvements
+   - Dark/light mode toggle
+   - Customizable chat interface
+   - Document preview
+   - Progress indicators
+   - Mobile responsiveness
+
+8. Document Management
+   - Document categories/tags
+   - Search by metadata
+   - Document versioning
+   - Bulk operations
+   - Export functionality

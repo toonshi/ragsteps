@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import time
 import shutil
 from pinecone import Pinecone
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -18,7 +19,7 @@ st.set_page_config(
 )
 
 # Title
-st.title("Study Rug")
+st.title("Bright Steps: Help us grow")
 
 # Initialize session states
 if 'messages' not in st.session_state:
@@ -32,6 +33,14 @@ if 'use_gpt_knowledge' not in st.session_state:
 
 # Create two columns: chat and sidebar
 chat_col, sidebar_col = st.columns([2, 1])
+
+def save_query_to_file(query, response):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("user_queries.txt", "a", encoding="utf-8") as f:
+        f.write(f"\n[{timestamp}]\n")
+        f.write(f"Query: {query}\n")
+        f.write(f"Response: {response}\n")
+        f.write("-" * 80 + "\n")
 
 with chat_col:
     # Chat interface
@@ -53,15 +62,17 @@ with chat_col:
 
         # Get bot response
         with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                response = query_knowledge_base(prompt, use_gpt_knowledge=st.session_state.use_gpt_knowledge)
-                if response['error']:
-                    error_message = f"⚠️ Error: {response['error']}"
-                    st.error(error_message)
-                    st.session_state.messages.append({"role": "assistant", "content": error_message})
-                else:
-                    st.markdown(response['answer'])
-                    st.session_state.messages.append({"role": "assistant", "content": response['answer']})
+            if prompt:
+                with st.spinner("Thinking..."):
+                    response = query_knowledge_base(prompt, use_gpt_knowledge=st.session_state.use_gpt_knowledge)
+                    save_query_to_file(prompt, response['answer'])
+                    if response['error']:
+                        error_message = f"⚠️ Error: {response['error']}"
+                        st.error(error_message)
+                        st.session_state.messages.append({"role": "assistant", "content": error_message})
+                    else:
+                        st.markdown(response['answer'])
+                        st.session_state.messages.append({"role": "assistant", "content": response['answer']})
 
 with sidebar_col:
     st.sidebar.title("Document Management")
@@ -79,7 +90,7 @@ with sidebar_col:
         "Upload PDF documents",
         type=['pdf'],
         accept_multiple_files=True,
-        help="Upload one or more PDF files to add to your knowledge base"
+        help="Upload one or more PDF files to add to the knowledge base"
     )
     
     if uploaded_files:
