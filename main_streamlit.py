@@ -12,13 +12,13 @@ load_dotenv()
 
 # Page config
 st.set_page_config(
-    page_title="RAG Knowledge Base",
+    page_title="Study Rug",
     page_icon=None,
     layout="wide"
 )
 
 # Title
-st.title("RAG Knowledge Base")
+st.title("Study Rug")
 
 # Initialize session states
 if 'messages' not in st.session_state:
@@ -165,4 +165,4 @@ with sidebar_col:
 
 # Footer
 st.markdown("---")
-st.markdown("For educational purposes only")
+st.markdown("Thanks for checking it out!")
