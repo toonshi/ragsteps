@@ -1,84 +1,14 @@
 from transformers import DPRQuestionEncoder, DPRQuestionEncoderTokenizer
-from langchain_openai import ChatOpenAI
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
-import chromadb
+import torch
+from pinecone import Pinecone
 from dotenv import load_dotenv
 import os
-import torch
-import numpy as np
-import streamlit as st
+from openai import OpenAI
 
 # Load environment variables
 load_dotenv()
 
-def expand_query(query, llm):
-    """Generate multiple variations of the query for better retrieval"""
-    template = """Generate 3 different versions of the following question that mean the same thing. 
-    Format them as a comma-separated list.
-    
-    Question: {question}
-    
-    Different versions:"""
-    
-    prompt = PromptTemplate(
-        template=template,
-        input_variables=["question"]
-    )
-    chain = LLMChain(llm=llm, prompt=prompt)
-    expanded = chain.run(question=query)
-    # Split the result and add the original query
-    queries = [query] + [q.strip() for q in expanded.split(',')]
-    return queries
-
-def get_relevant_context(queries, collection, question_encoder, question_tokenizer, k=3):
-    """Retrieve relevant context from ChromaDB based on the queries using DPR"""
-    # Create embeddings for all queries
-    all_embeddings = []
-    for query in queries:
-        inputs = question_tokenizer(
-            query,
-            max_length=512,
-            padding=True,
-            truncation=True,
-            return_tensors="pt"
-        )
-        with torch.no_grad():
-            embedding = question_encoder(**inputs).pooler_output[0]
-            all_embeddings.append(embedding.numpy().tolist())
-    
-    # Query ChromaDB with all embeddings
-    all_results = []
-    for embedding in all_embeddings:
-        results = collection.query(
-            query_embeddings=[embedding],
-            n_results=k
-        )
-        all_results.extend(zip(results['documents'][0], results['metadatas'][0]))
-    
-    # Remove duplicates while preserving order
-    seen = set()
-    unique_results = []
-    for doc, meta in all_results:
-        if doc not in seen:
-            seen.add(doc)
-            unique_results.append((doc, meta))
-    
-    # Format context with sources
-    context_parts = []
-    for doc, meta in unique_results[:k]:  # Take top k unique results
-        source = meta['source']
-        page = meta['page']
-        context_parts.append(f"From {source} (Page {page}):\n{doc}")
-    
-    return "\n\n".join(context_parts)
-
-def setup_rag():
-    """Initialize RAG components"""
-    # Initialize ChromaDB
-    client = chromadb.PersistentClient(path="./chroma_db")
-    collection = client.get_collection("ds_knowledge_base")
-    
+def get_question_embedding(question):
     # Initialize DPR question encoder
     question_encoder = DPRQuestionEncoder.from_pretrained(
         "facebook/dpr-question_encoder-single-nq-base"
@@ -87,55 +17,67 @@ def setup_rag():
         "facebook/dpr-question_encoder-single-nq-base"
     )
     
-    # Initialize LLM
-    openai_api_key = st.secrets["OPENAI_API_KEY"]  # Make sure to set this in your Streamlit secrets
+    # Create question embedding
+    question_inputs = question_tokenizer(question, return_tensors="pt")
+    question_embedding = question_encoder(**question_inputs).pooler_output
+    return question_embedding[0].detach().numpy()
 
-    # Initialize OpenAI model
-    llm = ChatOpenAI(
-        model="gpt-3.5-turbo",
-        temperature=0.7,
-        openai_api_key=openai_api_key  # Use the API key from Streamlit secrets
-    )
-    
-    # Create prompt template
-    template = """You are a helpful assistant that provides accurate information based on the given context.
-    Use the following context to answer the question. If you can't find the answer in the context, say so.
-    Don't make up information.
+def query_knowledge_base(question, top_k=3):
+    try:
+        # Initialize Pinecone
+        pc = Pinecone(api_key=os.getenv('PINECONE_API_KEY'))
+        
+        # Connect to index
+        index = pc.Index(os.getenv('PINECONE_INDEX_NAME'))
+        
+        # Get question embedding
+        question_embedding = get_question_embedding(question)
+        
+        # Query Pinecone
+        results = index.query(
+            vector=question_embedding.tolist(),
+            top_k=top_k,
+            include_metadata=True
+        )
+        
+        # Extract contexts
+        contexts = [match.metadata['text'] for match in results.matches]
+        
+        # Create prompt for GPT
+        prompt = f"""Based on the following contexts, answer the question. If the answer cannot be found in the contexts, say "I cannot answer this based on the available information."
 
-    Context:
-    {context}
+Question: {question}
 
-    Question: {question}
+Relevant contexts:
+{chr(10).join(f'Context {i+1}: {context}' for i, context in enumerate(contexts))}
 
-    Answer: """
-    
-    prompt = PromptTemplate(
-        template=template,
-        input_variables=["context", "question"]
-    )
-    
-    # Create chain
-    chain = LLMChain(llm=llm, prompt=prompt)
-    
-    # Return all components
-    return collection, question_encoder, question_tokenizer, llm, chain
-
-def query_documents(question):
-    """Main function to query documents using RAG with DPR and query expansion"""
-    # Set up RAG components
-    collection, question_encoder, question_tokenizer, llm, chain = setup_rag()
-    
-    # Expand the query
-    expanded_queries = expand_query(question, llm)
-    print("\nExpanded queries:", expanded_queries)
-    
-    # Get relevant context using all queries
-    context = get_relevant_context(expanded_queries, collection, question_encoder, question_tokenizer)
-    
-    # Generate answer
-    response = chain.run(context=context, question=question)
-    
-    return response
+Answer the question in a clear and concise manner. If you find multiple relevant pieces of information in the contexts, synthesize them into a coherent response."""
+        
+        # Get response from GPT
+        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant that answers questions based on the provided context. Be accurate and concise."},
+            {"role": "user", "content": prompt}
+        ]
+        
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            temperature=0.7,
+            max_tokens=500
+        )
+        
+        return {
+            'answer': response.choices[0].message.content,
+            'contexts': contexts,
+            'error': None
+        }
+    except Exception as e:
+        return {
+            'answer': None,
+            'contexts': None,
+            'error': str(e)
+        }
 
 if __name__ == "__main__":
     while True:
@@ -148,9 +90,10 @@ if __name__ == "__main__":
         
         try:
             # Get response
-            answer = query_documents(question)
-            print("\nAnswer:", answer)
+            answer = query_knowledge_base(question)
+            print("\nAnswer:", answer['answer'])
+            print("\nContexts:", answer['contexts'])
             
         except Exception as e:
             print(f"An error occurred: {str(e)}")
-            print("Make sure you have set your OPENAI_API_KEY in the .env file")
+            print("Make sure you have set your PINECONE_API_KEY and OPENAI_API_KEY in the .env file")
