@@ -4,17 +4,18 @@ from transformers import (
     DPRContextEncoder,
     DPRContextEncoderTokenizer,
 )
-import chromadb
 import os
 import torch
+from pinecone import Pinecone
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 def load_pdfs_to_chroma(pdf_directory):
-    # Initialize ChromaDB client
-    client = chromadb.PersistentClient(path="./chroma_db")
-    collection = client.get_or_create_collection(
-        name="ds_knowledge_base",
-        metadata={"description": "Knowledge base for data science content"}
-    )
+    # Initialize Pinecone
+    pc = Pinecone(api_key=os.getenv('PINECONE_API_KEY'))
+    index = pc.Index(os.getenv('PINECONE_INDEX_NAME'))
     
     # Initialize DPR context encoder
     context_encoder = DPRContextEncoder.from_pretrained(
@@ -44,6 +45,10 @@ def load_pdfs_to_chroma(pdf_directory):
             # Split text into chunks
             chunks = text_splitter.split_documents(pages)
             
+            # Process chunks in batches
+            batch_size = 100
+            vectors = []
+            
             # Process each chunk
             for i, chunk in enumerate(chunks):
                 # Create DPR embeddings
@@ -57,21 +62,26 @@ def load_pdfs_to_chroma(pdf_directory):
                 with torch.no_grad():
                     embedding = context_encoder(**context_inputs).pooler_output[0]
                 
-                # Add to ChromaDB
-                collection.add(
-                    documents=[chunk.page_content],
-                    embeddings=[embedding.numpy().tolist()],
-                    metadatas=[{
+                # Prepare vector for Pinecone
+                vector = {
+                    "id": f"{filename}_chunk_{i}",
+                    "values": embedding.numpy().tolist(),
+                    "metadata": {
+                        "text": chunk.page_content,
                         "source": filename,
-                        "page": chunk.metadata.get('page', 0),
-                        "chunk_id": f"{filename}_chunk_{i}"
-                    }],
-                    ids=[f"{filename}_chunk_{i}"]
-                )
+                        "page": chunk.metadata.get('page', 0)
+                    }
+                }
+                vectors.append(vector)
+                
+                # Upload batch if it's full or this is the last chunk
+                if len(vectors) >= batch_size or i == len(chunks) - 1:
+                    index.upsert(vectors=vectors)
+                    vectors = []  # Clear the batch
             
             print(f"Completed processing {filename}")
     
-    print("All PDFs have been processed and stored in the database!")
+    print("All PDFs have been processed and stored in Pinecone!")
 
 if __name__ == "__main__":
     # Use the data directory where PDFs are stored
