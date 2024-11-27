@@ -222,12 +222,6 @@ docker build -t bright-steps .
 docker run -p 8501:8501 bright-steps
 ```
 
-### Cloud Hosting
-Supported platforms:
-- Heroku
-- Google Cloud Run
-- AWS Elastic Beanstalk
-- Azure App Service
 
 ## Troubleshooting
 

@@ -3,7 +3,6 @@
 This directory contains documentation resources for Bright Steps:
 
 ## Screenshots
-Place interface screenshots here with descriptive names:
 - profile_creation.png
 - milestone_tracking.png
 - question_answering.png
