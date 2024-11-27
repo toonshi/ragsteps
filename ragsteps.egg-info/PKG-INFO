@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: ragsteps
+Version: 0.1.0
+Requires-Dist: streamlit
+Requires-Dist: pinecone-client
+Requires-Dist: sentence-transformers
+Requires-Dist: python-dotenv
+Requires-Dist: langchain
+Requires-Dist: langchain_community
+Requires-Dist: langchain_openai
+Requires-Dist: chromadb
+Requires-Dist: transformers
+Requires-Dist: torch
+Requires-Dist: PyPDF2

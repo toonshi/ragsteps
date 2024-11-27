@@ -1,0 +1,11 @@
+streamlit
+pinecone-client
+sentence-transformers
+python-dotenv
+langchain
+langchain_community
+langchain_openai
+chromadb
+transformers
+torch
+PyPDF2

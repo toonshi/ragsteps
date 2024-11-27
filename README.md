@@ -1,29 +1,33 @@
-# RAG Steps - Intelligent Document Analysis System
+# Bright Steps - Intelligent Child Development Assistant
 
 ## Overview
-RAG Steps is a sophisticated document analysis system that combines the power of Retrieval-Augmented Generation (RAG) with modern AI techniques to provide intelligent answers from your PDF documents. The system uses state-of-the-art language models and semantic search to understand and answer questions about your documents with high accuracy.
+Bright Steps is an innovative child development tracking system that combines modern AI techniques with expert knowledge to help parents and caregivers track, understand, and support their child's development journey. The system uses Retrieval-Augmented Generation (RAG) to provide personalized, evidence-based answers about child development.
 
 ## Key Features
 
-### Document Processing
-- 📄 Support for multiple PDF documents
-- 🔄 Automatic text extraction and processing
-- 📊 Smart text chunking for optimal context
+### Profile Management
+- 👶 Create and manage child profiles
+- 📊 Track age-appropriate milestones
+- 🏥 Record medical considerations
+- 🎯 Monitor focus areas
 
-### AI-Powered Search
-- 🧠 Dense Passage Retrieval (DPR) for semantic understanding
-- 🔍 Context-aware search capabilities
-- 🎯 Intelligent query expansion
+### Development Tracking
+- ✅ Age-appropriate milestone checklists
+- 📈 Progress tracking over time
+- 🎨 Multiple development categories
+- 📝 Notes and observations
 
-### Interactive Interface
-- 💻 User-friendly Streamlit web interface
-- 📁 Easy document management (upload/delete)
-- 📊 Real-time processing status
+### AI-Powered Assistance
+- 🧠 Intelligent question answering about child development
+- 📚 Evidence-based information retrieval
+- 🔍 Context-aware responses
+- 👤 Profile-aware suggestions
 
-### Advanced Features
-- 💾 Persistent vector storage with ChromaDB
-- 🤖 GPT-powered answer generation
-- 🔄 Automatic query enhancement
+### User Interface
+- 💻 Clean, intuitive Streamlit interface
+- 📱 Mobile-friendly design
+- 🔄 Real-time updates
+- 📊 Visual progress indicators
 
 ## Getting Started
 
@@ -31,6 +35,7 @@ RAG Steps is a sophisticated document analysis system that combines the power of
 - Python 3.10 or higher
 - Virtual environment (recommended)
 - OpenAI API key
+- Pinecone API key (for vector storage)
 
 ### Installation
 
@@ -57,17 +62,19 @@ pip install -r requirements.txt
 ```
 
 4. Set up environment variables:
-- Create a `.env` file in the project root
-- Add your OpenAI API key:
-```
-OPENAI_API_KEY=your_api_key_here
+Create a `.env` file in the project root with:
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+PINECONE_API_KEY=your_pinecone_api_key_here
+PINECONE_ENVIRONMENT=your_pinecone_environment
+PINECONE_INDEX_NAME=your_index_name
 ```
 
 ### Running the Application
 
 1. Start the Streamlit interface:
 ```bash
-streamlit run main_with_docs.py
+streamlit run web/main_streamlit_with_profiles.py
 ```
 
 2. Open your browser:
@@ -75,78 +82,69 @@ streamlit run main_with_docs.py
 
 ## Usage Guide
 
-### Adding Documents
-1. Click the file upload button in the sidebar
-2. Select one or more PDF files
-3. Wait for processing completion
-4. Your documents are now searchable!
+### Creating a Profile
+1. Use the sidebar to create a new profile
+2. Enter child's name and date of birth
+3. Add any medical considerations
+4. Specify current focus areas
 
-### Asking Questions
-1. Type your question in the main text input
-2. The system will:
-   - Expand your query for better coverage
-   - Search for relevant context
-   - Generate a comprehensive answer
+### Tracking Development
+1. Select a profile to load
+2. View age-appropriate milestones
+3. Check off completed milestones
+4. Track progress over time
 
-### Managing Documents
-- View all uploaded documents in the sidebar
-- Delete individual documents with the 🗑️ button
-- Use "Clear All" to reset the system
+### Getting Development Advice
+1. Ask questions about child development
+2. Receive personalized, evidence-based answers
+3. Get suggestions based on the child's profile
 
 ## Technical Details
 
 ### Components
 - **Frontend**: Streamlit
-- **Embeddings**: DPR (facebook/dpr-ctx_encoder-single-nq-base)
-- **Vector Store**: ChromaDB
+- **Embeddings**: DPR (facebook/dpr-question_encoder-single-nq-base)
+- **Vector Store**: Pinecone
 - **LLM**: GPT-3.5-turbo
-- **PDF Processing**: PyPDF, LangChain
+- **Profile Storage**: Local JSON files
 
-### File Structure
+### Project Structure
 ```
 ragsteps/
-├── main_with_docs.py    # Main Streamlit interface
-├── pdf_loader.py        # PDF processing & vectorization
-├── rag_query.py         # Query processing
-├── requirements.txt     # Project dependencies
-├── .env                 # Environment variables
-└── data/               # Document storage
+├── web/                  # Web interface
+│   └── main_streamlit_with_profiles.py
+├── src/
+│   ├── models/          # Data models
+│   ├── rag/            # RAG implementation
+│   └── utils/          # Utilities
+├── data/               # Development data
+└── user_data/         # User profiles
 ```
 
-## Performance Notes
-- Initial setup downloads the DPR model (~500MB)
-- PDF processing time varies with document size
-- Vector search is optimized for quick retrieval
-
-## Security Considerations
-- Keep your `.env` file secure
-- Never commit API keys
-- Regularly update dependencies
+## Security & Privacy
+- All profile data is stored locally
+- API keys are secured in .env
+- No personal data is sent to external services
+- Regular security updates
 
 ## Troubleshooting
 
 ### Common Issues
-1. **Slow Model Download**
-   - First run downloads large models
-   - Ensure stable internet connection
+1. **Profile Not Saving**
+   - Check write permissions in user_data directory
+   - Verify profile format
 
-2. **Memory Usage**
-   - Large documents may require more RAM
-   - Process fewer documents simultaneously
+2. **RAG Not Responding**
+   - Verify API keys in .env
+   - Check internet connection
+   - Confirm Pinecone index is running
 
-3. **API Key Issues**
-   - Verify OpenAI API key in `.env`
-   - Check API usage limits
+3. **Milestone Tracking**
+   - Ensure date of birth is correct
+   - Check age calculations
 
 ## Contributing
-Contributions are welcome! Please feel free to submit pull requests.
+We welcome contributions! Please feel free to submit pull requests or open issues for discussion.
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-
-## Environment Setup
-
-1. Copy `.env.example` to [.env](cci:7://file:///c:/Users/Roy%20Agoya/Desktop/Michael%27s%20projects/ragsteps/.env:0:0-0:0):
-   ```bash
-   cp .env.example .env
