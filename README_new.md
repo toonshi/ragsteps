@@ -1,27 +1,11 @@
-# BrightSteps - Empowering Down Syndrome Development
+# Bright Steps - Intelligent Child Development Assistant
 
 ## Overview
-BrightSteps is an innovative child development platform specifically designed for children with Down syndrome. In partnership with the Down Syndrome Society of Kenya (DSSK), we combine modern AI techniques with expert knowledge to provide affordable, accessible developmental support. Our platform helps parents, schools, and healthcare professionals collaborate to create personalized learning experiences and therapy guidance.
-
-## The Challenge
-Children with Down syndrome face several challenges in their educational journey:
-- Traditional therapy sessions cost up to $200 each
-- Limited access to specialized education and support
-- Lack of early intervention opportunities
-- Educational curriculum gaps
-- Societal stigma and misconceptions
-
-## Our Solution
-BrightSteps provides a comprehensive, technology-enabled platform that:
-- Reduces therapy costs by 50%
-- Enables personalized learning paths
-- Facilitates early intervention
-- Supports inclusive education
-- Builds supportive communities
+Bright Steps is an innovative child development tracking system that combines modern AI techniques with expert knowledge to help parents and caregivers track, understand, and support their child's development journey. The system uses Retrieval-Augmented Generation (RAG) to provide personalized, evidence-based answers about child development.
 
 ## Development Categories
 
-BrightSteps tracks development across key areas essential for children with Down syndrome:
+Bright Steps tracks development across key areas defined by leading pediatric organizations:
 
 ### 🏃‍♂️ Motor Skills
 - **Gross Motor**: Large muscle movements like crawling, walking, running
@@ -58,13 +42,13 @@ BrightSteps tracks development across key areas essential for children with Down
 - 🎯 Monitor focus areas
 
 ### Development Tracking
-- ✅ Down syndrome-specific milestone checklists
+- ✅ Age-appropriate milestone checklists
 - 📈 Progress tracking over time
 - 🎨 Multiple development categories
 - 📝 Notes and observations
 
 ### AI-Powered Assistance
-- 🧠 Intelligent question answering about Down syndrome development
+- 🧠 Intelligent question answering about child development
 - 📚 Evidence-based information retrieval
 - 🔍 Context-aware responses
 - 👤 Profile-aware suggestions
@@ -136,6 +120,11 @@ PINECONE_ENVIRONMENT=your_pinecone_environment
 PINECONE_INDEX_NAME=your_index_name
 ```
 
+**Rate Limits**:
+- Free tier: 1 request/second
+- Starter: 100 requests/second
+- Monitor usage in Pinecone dashboard
+
 ### Running the Application
 
 1. Start the Streamlit interface:
@@ -161,19 +150,35 @@ streamlit run web/main_streamlit_with_profiles.py
 4. Track progress over time
 
 ### Getting Development Advice
-1. Ask questions about Down syndrome development
+1. Ask questions about child development
 2. Receive personalized, evidence-based answers
 3. Get suggestions based on the child's profile
 
+## Technical Details
+
+### Components
+- **Frontend**: Streamlit
+- **Embeddings**: DPR (facebook/dpr-question_encoder-single-nq-base)
+- **Vector Store**: Pinecone
+- **LLM**: GPT-3.5-turbo
+- **Profile Storage**: Local JSON files
+
+### Project Structure
+```
+ragsteps/
+├── web/                  # Web interface
+│   └── main_streamlit_with_profiles.py
+├── src/
+│   ├── models/          # Data models
+│   ├── rag/            # RAG implementation
+│   └── utils/          # Utilities
+├── data/               # Development data
+└── user_data/         # User profiles
+```
+
 ## Data Sources
 
-BrightSteps uses evidence-based developmental guidelines from leading organizations:
-
-### DSSK Guidelines
-- Down Syndrome-specific milestones
-- Cultural context for Kenya
-- Expert-validated content
-- Local professional network
+Bright Steps uses evidence-based developmental guidelines from leading organizations:
 
 ### CDC Developmental Milestones
 - Age-specific milestones from 2 months to 5 years
@@ -190,26 +195,55 @@ BrightSteps uses evidence-based developmental guidelines from leading organizati
 - Best practices for child development
 - [AAP Developmental Monitoring](https://www.aap.org/en/patient-care/developmental-monitoring-and-screening/)
 
+### Expert Resources
+- Zero to Three developmental guidelines
+- Child development research publications
+- Pediatric specialist recommendations
+
 ## Security & Privacy
 - All profile data is stored locally
 - API keys are secured in .env
 - No personal data is sent to external services
 - Regular security updates
 
-## Pricing
+## Deployment Options
 
-### For Parents
-- Basic Package: Free
-- Therapy Consultations: $100/session (50% less than traditional therapy)
-- Specialist Guides: $21/guide
+### Local Deployment
+1. Follow installation steps above
+2. Run with `streamlit run`
+3. Access via localhost
 
-### For Schools
-- Annual Subscription: $1,050
-- Includes:
-  * Advanced analytics
-  * Teacher resources
-  * Integration support
-  * Professional network access
+### Docker Deployment
+```bash
+# Build image
+docker build -t bright-steps .
+
+# Run container
+docker run -p 8501:8501 bright-steps
+```
+
+### Cloud Hosting
+Supported platforms:
+- Heroku
+- Google Cloud Run
+- AWS Elastic Beanstalk
+- Azure App Service
+
+## Troubleshooting
+
+### Common Issues
+1. **Profile Not Saving**
+   - Check write permissions in user_data directory
+   - Verify profile format
+
+2. **RAG Not Responding**
+   - Verify API keys in .env
+   - Check internet connection
+   - Confirm Pinecone index is running
+
+3. **Milestone Tracking**
+   - Ensure date of birth is correct
+   - Check age calculations
 
 ## Contributing
 We welcome contributions! Please feel free to submit pull requests or open issues for discussion.

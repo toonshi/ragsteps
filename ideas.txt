@@ -49,7 +49,34 @@ Study Rug - Future Enhancement Ideas
 
 8. Document Management
    - Document categories/tags
-   - Search by metadata
-   - Document versioning
+   - Search within categories
    - Bulk operations
    - Export functionality
+
+9. README Enhancements
+   - Add development category details:
+     * Motor skills (fine and gross)
+     * Speech and language
+     * Social and emotional
+     * Cognitive development
+     * Self-help skills
+   - Include interface screenshots:
+     * Profile creation
+     * Milestone tracking
+     * Question answering
+     * Progress visualization
+   - Expand API setup instructions:
+     * Step-by-step Pinecone setup
+     * OpenAI API best practices
+     * Rate limit considerations
+     * Cost estimation guide
+   - Document data sources:
+     * CDC developmental milestones
+     * WHO growth standards
+     * AAP recommendations
+     * Expert pediatric resources
+   - Add deployment guides:
+     * Docker containerization
+     * Cloud hosting options
+     * Local deployment
+     * Database migration
